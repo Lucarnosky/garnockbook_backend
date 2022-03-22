@@ -1,4 +1,4 @@
-# node_backend
+# garnockbook_backend
 Creazione di un backend per App create in React Native, struttura a microservisi
 
 ## Structure
