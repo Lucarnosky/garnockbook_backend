@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -36,6 +37,17 @@ getUsers = (req, res, next) => {
     });
 };
 
+getUserById = (req, res, next) => {
+  con.query("SELECT * FROM users WHERE userid = $1", [req.userId])
+    .then(result => {
+     
+      return json({ status: "true", results: result.rows });
+    })
+    .catch(err => {
+      res.json({ status: "false", message: "Error occured" });
+    });
+}
+
 logInUser = (req, res, next) => {
   const { username, password } = req.body;
   var sql = 'SELECT * FROM users WHERE username = $1';
@@ -43,7 +55,11 @@ logInUser = (req, res, next) => {
     .then(result => {
       if (result.rowCount > 0) {
         if (result.rows[0].password == password) {
-          res.json({ message: "User logged in" });
+          console.log(result.rows[0].userid);
+          const token = jwt.sign({ id: result.rows[0].userid }, 'secretKey', {
+            expiresIn: 86400
+          });
+          res.json({ message: "User logged in",token: token });
         } else {
           res.json({ message: "Wrong password" });
         }
@@ -56,4 +72,4 @@ logInUser = (req, res, next) => {
     })
 };
 
-module.exports = { newUser, getUsers, logInUser };
+module.exports = { newUser, getUsers, logInUser,getUserById };
