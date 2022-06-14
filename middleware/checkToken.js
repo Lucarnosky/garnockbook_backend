@@ -12,9 +12,9 @@ exports.verifyToken = async (req, res, next) => {
       return res.status(403).json({
         message: "No token provided",
       });
-    const decoded = jwt.verify(token, "secretKey");
-
-    req.userId = decoded.id;
+    const decoded = jwt.verify(token, process.env.TOKEN_SALT);
+    userId = decoded.id;
+    username = decoded.username;
     const pool = new Pool({
         connectionString: process.env.DB_CONNECTION_STRING,
         ssl: {
@@ -22,10 +22,7 @@ exports.verifyToken = async (req, res, next) => {
         }
     })
     const client = await pool.connect();
-    const result = await client.query({
-      rowMode: "array",
-      text: "SELECT userid FROM users WHERE userid = "+req.userId,
-    });
+    const result = await client.query("SELECT userid FROM users WHERE userid = $1 AND username = $2", [userId,username]);
     await client.end();
     if(result.rows.length == 0){
         return res.status(403).json({

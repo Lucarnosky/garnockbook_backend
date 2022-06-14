@@ -55,8 +55,8 @@ logInUser = (req, res, next) => {
     .then(result => {
       if (result.rowCount > 0) {
         if (result.rows[0].password == password) {
-          console.log(result.rows[0].userid);
-          const token = jwt.sign({ id: result.rows[0].userid }, 'secretKey', {
+          user = result.rows[0];
+          const token = jwt.sign({ id:user.userid,username:user.username }, process.env.TOKEN_SALT, {
             expiresIn: 86400
           });
           res.json({ message: "User logged in",token: token });
