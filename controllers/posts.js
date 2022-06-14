@@ -122,13 +122,23 @@ toggleLike = (req, res, next) => {
         }
     });
 };
+
+getPostComments = (req, res, next) => {
+    sql = 'SELECT "postText","postedOn","firstName","lastName","username" FROM post_comments JOIN users ON users.userId = post_comments."postedBy" WHERE "postId" = $1 AND visible = true';
+    con.query(sql, [req.params.id], function (err, result) {
+        if (err)
+            res.json({ status: "false", message: "Error occured" });
+        res.json({ status: "true", totalPosts: result.rows.length,results: result.rows });
+    });
+}
+
 timeLine = (req, res, next) => {
     offset = req.params.page * 20;
-    sql = 'SELECT * FROM posts JOIN Users ON posts."userId" = users.userId WHERE "postedOn" <= $1 ORDER BY "postedOn" DESC LIMIT 20 OFFSET $2';
+    sql = 'SELECT * FROM posts JOIN Users ON posts."userId" = users.userId WHERE "postedOn" <= $1 ORDER BY "postedOn" DESC LIMIT 100 OFFSET $2';
     con.query(sql, [req.params.startDate, offset], function (err, result) {
         if (err)
             res.json({ status: "false", message: "Error occured " + err });
         res.json({ status: "true", results: result.rows });
     });
 };
-module.exports = { getUserPost, getPost, insertPost, updatePost, toggleLike, getPostLikesQty, timeLine };
+module.exports = { getUserPost, getPost, insertPost, updatePost, toggleLike, getPostLikesQty,getPostComments, timeLine };
